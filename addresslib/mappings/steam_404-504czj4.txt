@@ -38,6 +38,8 @@
 51  0x21CB380   # C_CombatActorHuntAttack primary vtable (C_CombatActorObject)
 52  0x21CB3B8   # C_CombatActorHuntAttack secondary vtable (I_CombatActorHuntAttack)
 64  0x29D16B8   # gEnv (SSystemGlobalEnvironment*)
+123 0x29F2880   # C_CombatActorActionSyncHit RTTI type descriptor (combatmodule); from libKCD1 HEAD include/Offsets/Offsets_RTTI.h, not the pre-address-library header like the entries above
+141 0x29F6718   # I_Action RTTI type descriptor (framework); source type for the same kcd_cast<C_CombatActorActionSyncHit*> as id 123 above, from Offsets_RTTI.h
 870 0x34FFD10   # S_GameContext singleton
 875 0x359B330   # combat action-type ID array base
 876 0x359C2F0   # combat input-class ID array base

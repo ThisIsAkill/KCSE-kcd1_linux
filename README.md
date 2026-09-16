@@ -102,13 +102,21 @@ python3 addresslib/gen_addresslib.py <game>/KCSE/addresslib addresslib/mappings/
 
 `dev-cycle.sh --game` does this automatically. If you're on a game version this repo doesn't have a mapping for yet, contributions adding one are welcome.
 
+If a plugin crashes with `REL::ID N is not present in the address library for this version`, don't hand-search libKCD1's headers for it — run:
+
+```sh
+python3 addresslib/resolve_id.py N
+```
+
+It looks `N` up in libKCD1's `Offsets_RTTI.h`/`Offsets_VTABLE.h` (which embed each id's address in a comment), adds it to the mapping file, and re-sorts it. Pass `--game-dir <path>` to also recompile the `.bin` in the same step. It covers the common case — a plugin's `kcd_cast<>` or vtable hook needing an id nobody's mapped yet; if it can't find one, it tells you why and where to look instead.
+
 ## Repository layout
 
 | Path | Contents |
 | --- | --- |
 | `src/` | KCSE core: DLL proxy, plugin manager, event dispatcher, task interface, trampoline glue |
 | `extern/libKCD1/` | [libKCD1](https://github.com/JerryYOJ/libKCD1), the reverse-engineered game headers KCSE builds against |
-| `addresslib/` | Address-library mappings and the generator that compiles them |
+| `addresslib/` | Address-library mappings, the generator that compiles them, and `resolve_id.py` for filling in a missing `REL::ID` |
 | `cmake/` | CMake helpers, including the MinGW-w64 cross-compilation toolchain file |
 | `test/` | Minimal Wine smoke test, no game installation required |
 | `build.sh` / `dev-cycle.sh` | Linux build and build-test-deploy scripts |
