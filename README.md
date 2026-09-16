@@ -19,6 +19,18 @@ This currently supports **Steam, game version 1.9.7.0** (build `404-504czj4`). O
 
 To install a plugin, drop its DLL into `<game>/KCSE/Plugins/` (or `<game>/mods/<modname>/KCSE/Plugins/` if you're using a mod manager).
 
+### Steam Deck / Desktop Mode
+
+`<game>` above means the game's install folder. On Steam Deck (or any Linux Steam install) the easiest way to get there:
+
+1. Switch to **Desktop Mode** (hold the Power button → *Switch to Desktop*). You need Desktop Mode to copy files — this can't be done from Gaming Mode.
+2. In Steam, right-click **Kingdom Come: Deliverance** → **Properties → Installed Files → Browse...**. This opens the game's folder directly in the file manager (Dolphin), so you don't need to know or type the actual path.
+3. Download `dinput8.dll` and `kcd_addresslib_steam_404-504czj4.bin` from the [latest release](../../releases/latest) using the desktop browser.
+4. In the file manager: copy `dinput8.dll` into the `Bin\Win64` folder, and `kcd_addresslib_steam_404-504czj4.bin` into `KCSE\addresslib` (create the `KCSE` and `addresslib` folders if they don't exist yet).
+5. Switch back to Gaming Mode and launch the game normally — no launch options, no forcing a specific Proton version, nothing else to configure.
+
+To confirm it worked: open `<game>/KCSE/KCSE.log` in a text editor after launching. It should end with `Ready.`. If the game won't start at all (with or without KCSE), that's a Proton/compatibility issue unrelated to this mod — check the game's own Properties → Compatibility tab first.
+
 ## Building from source
 
 **Linux:**
