@@ -4,11 +4,23 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build-mingw"
 TOOLCHAIN="${SCRIPT_DIR}/cmake/toolchain-mingw64.cmake"
+RE_ROOT="${SCRIPT_DIR}/extern/libKCD1"
+PATCH="${SCRIPT_DIR}/patches/libKCD1-mingw-crythread.patch"
 
 # Ensure submodule is populated
-if [ ! -f "${SCRIPT_DIR}/extern/libKCD1/include/KCSE/KCSEAPI.h" ]; then
+if [ ! -f "${RE_ROOT}/include/KCSE/KCSEAPI.h" ]; then
     echo "Initializing submodules..."
     git -C "${SCRIPT_DIR}" submodule update --init
+fi
+
+# CrySimpleThread<T>'s destructor references gEnv before ISystem.h (which
+# declares it) is included anywhere in platform.h's chain. MSVC defers this
+# lookup to instantiation (and nothing ever instantiates CrySimpleThread<T>);
+# GCC's two-phase lookup requires it resolved at template definition, so the
+# PCH fails to build under MinGW without this patch.
+if ! git -C "${RE_ROOT}" apply --reverse --check "${PATCH}" 2>/dev/null; then
+    echo "Patching libKCD1 for MinGW gEnv visibility..."
+    git -C "${RE_ROOT}" apply "${PATCH}"
 fi
 
 # Configure (only if not already configured)

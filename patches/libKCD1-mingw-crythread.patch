@@ -1,0 +1,21 @@
+diff --git a/include/CryEngine/CryCommon/CryThread_windows.h b/include/CryEngine/CryCommon/CryThread_windows.h
+index 3e7bf40..8880e5c 100644
+--- a/include/CryEngine/CryCommon/CryThread_windows.h
++++ b/include/CryEngine/CryCommon/CryThread_windows.h
+@@ -321,8 +321,16 @@ public:
+ 	{
+ 		if (IsStarted())
+ 		{
++			// gEnv is declared in ISystem.h, which isn't included yet at this point in
++			// platform.h's chain. MSVC defers this (non-dependent, but unresolved until
++			// instantiation) name lookup; GCC's two-phase lookup requires it at template
++			// definition, so it fails to compile under MinGW even though nothing actually
++			// instantiates CrySimpleThread<T>. Skip it under GCC -- this diagnostic-only
++			// path is never exercised by KCSE/CombatAssist.
++#if !defined(__GNUC__) || defined(_MSC_VER)
+ 			if (gEnv && gEnv->pLog)
+ 				gEnv->pLog->LogError("Runaway thread %p '%s'", m_thread, m_name.c_str());
++#endif
+ 			Cancel();
+ 			WaitForThread();
+ 		}

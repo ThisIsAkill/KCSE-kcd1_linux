@@ -15,7 +15,7 @@ It installs as a single `dinput8.dll` — no exe patching, no ASI loader, no rep
 3. Copy `kcd_addresslib_steam_404-504czj4.bin` to `<game>/KCSE/addresslib/`.
 4. Launch the game as usual. That's it — no other setup required.
 
-This currently supports **Steam, game version 1.9.7.0** (build `404-504czj4`). Other versions/distributions aren't mapped yet — see [Address Library](#address-library) below if you want to add support for yours.
+This currently supports **Steam, game version 1.9.7.0** (build `404-504czj4`). Other versions/distributions aren't mapped yet — see [Address Library](#address-library) below if you want to add support for yours. On any other build, KCSE fails loudly with a clear dialog ("Address library not found" / "REL::ID N is not present") rather than silently running with wrong addresses — a crash on launch almost always means a version mismatch, not a corrupt install.
 
 To install a plugin, drop its DLL into `<game>/KCSE/Plugins/` (or `<game>/mods/<modname>/KCSE/Plugins/` if you're using a mod manager).
 

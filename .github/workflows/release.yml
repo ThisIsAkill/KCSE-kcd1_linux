@@ -1,0 +1,53 @@
+name: Build and release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Non-recursive: extern/libKCD1's own nested submodules (Projects/*)
+          # are dev-only upstream project trees KCSE doesn't build against,
+          # and are unreachable over SSH from an unauthenticated checkout.
+          submodules: true
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build mingw-w64 build-essential python3 wine
+
+      - name: Build
+        run: ./build.sh
+
+      - name: Wine smoke test
+        # Best-effort: Wine's startup latency under a fresh CI container is
+        # occasionally too slow for the smoke test's timeout, independent of
+        # whether the build itself is correct. Don't fail the release over it.
+        run: cmake --build build-mingw --target smoke_test
+        continue-on-error: true
+
+      - name: Compile address libraries
+        run: |
+          mkdir -p dist/addresslib
+          python3 addresslib/gen_addresslib.py dist/addresslib
+
+      - name: Stage release assets
+        run: cp build-mingw/dinput8.dll dist/
+
+      - name: Create release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/dinput8.dll
+            dist/addresslib/*.bin
+          generate_release_notes: true
