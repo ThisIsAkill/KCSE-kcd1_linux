@@ -6,11 +6,42 @@
 # Format: one "<REL::ID> <hex offset from module base>" pair per line.
 # Blank lines and lines starting with '#' are ignored.
 #
-# id 882: global holding the IGameFramework* (CCryAction). Carried over from
-# libKCD1's pre-address-library hardcoded constant (kCCryActionOffset, see
-# libKCD1 commit 60573fc^:include/Offsets/Offsets.h), which was verified
-# against an earlier game build. It has NOT been independently re-verified
-# against Steam build 404-504czj4 / game version 1.9.7.0 -- if GetCCryAction()
-# returns a bad pointer, plugins that call it may crash. Please verify and
-# update this file if you can confirm the correct offset for this build.
-882 0x3785D88
+# Every entry below is carried over from libKCD1's pre-address-library hardcoded
+# constants (see libKCD1 commit 60573fc^:include/Offsets/Offsets.h and
+# include/Offsets/Offsets_VTABLE.h), matched to each REL::ID by cross-referencing
+# the literal sub_18XXXXXXX addresses and descriptions quoted in both the old
+# header and the call sites that replaced it -- not by numeric guesswork. Those
+# constants were verified against an earlier game build; they have NOT been
+# independently re-verified against Steam build 404-504czj4 / game version
+# 1.9.7.0. If a plugin crashes with a bad-pointer/access-violation fault (as
+# opposed to the friendly "REL::ID N is not present" dialog) rather than working
+# correctly, one of these offsets is likely wrong for this exact build and needs
+# re-deriving from the actual binary. Please verify and update this file if you
+# can confirm the correct offset for any entry.
+
+1   0x2185C4    # S_CombatActionAttackQueryData: destroy +0xA8 sub-list (sub_1802185C4)
+2   0x219730    # S_CombatActionAttackQueryData::GetCacheKey, vtable[1] (sub_180219730)
+9   0x28C040    # CryEngine bucket pool malloc (sub_18028C040)
+13  0x3A107C    # C_Actor::GetOrCreateCombatActor
+17  0x45D1EC    # S_CombatActorState::SetCommittedAttackZone (sub_18045D1EC)
+18  0x45FD18    # enumerate attack-candidate vector (sub_18045FD18)
+19  0x45FF90    # C_CombatActionAttackFactory::BuildAttackQuery (sub_18045FF90)
+20  0x4600BC    # S_CombatActionAttackQueryData engine ctor (sub_1804600BC)
+21  0x460934    # C_CombatActionFactory::CreateAndDispatch
+22  0x4F83C8    # C_CombatAutomationDefense::SetReactionWeights (sub_1804F83C8)
+25  0x5B72C0    # CryEngine::MemFree(ptr, size), SIZED
+26  0x602C34    # C_CombatComboManager combo-advance handler (sub_180602C34)
+27  0x63A634    # C_CombatActor::SetOpponent (sub_18063A634)
+31  0x69536C    # C_CombatActor::DispatchCounterAction
+37  0xF49280    # S_CombatActionAttackQueryData vtable[0] GetTypeNameHash (sub_180F49280)
+48  0x15F457C   # GetInventoryForWuid: container WUID -> single C_Inventory (sub_1815F457C)
+51  0x21CB380   # C_CombatActorHuntAttack primary vtable (C_CombatActorObject)
+52  0x21CB3B8   # C_CombatActorHuntAttack secondary vtable (I_CombatActorHuntAttack)
+64  0x29D16B8   # gEnv (SSystemGlobalEnvironment*)
+870 0x34FFD10   # S_GameContext singleton
+875 0x359B330   # combat action-type ID array base
+876 0x359C2F0   # combat input-class ID array base
+878 0x36DD8A0   # S_CombatSettings singleton
+881 0x3785BC0   # Cry3DEngineBase static C3DEngine* (qword_183785BC0)
+882 0x3785D88   # global holding the IGameFramework* (CCryAction)
+886 0x37999E0   # central WUID->C_AIObject* map pointer (qword_1837999E0)
