@@ -1,10 +1,10 @@
-# KCSE — Kingdom Come Script Extender (Linux)
+# Cryhook
 
 [![C++17](https://img.shields.io/static/v1?label=standard&message=C%2B%2B17&color=blue&logo=c%2B%2B&logoColor=white&style=flat)](https://en.cppreference.com/w/cpp/compiler_support)
 [![Platform](https://img.shields.io/static/v1?label=platform&message=Linux%20(Proton)%20%7C%20Windows&color=dimgray&style=flat)](#)
 [![License](https://img.shields.io/static/v1?label=license&message=GPLv3&color=blue&style=flat)](LICENSE)
 
-KCSE is a native plugin framework for **Kingdom Come: Deliverance 1**, in the same spirit as SKSE for Skyrim. It lets modders write C++ plugins that hook into game events, run code every frame, and call game functions directly — instead of being limited to what the game's own scripting supports.
+A Linux/Proton port of **KCSE** (Kingdom Come Script Extender) — [JerryYOJ](https://github.com/JerryYOJ)'s native plugin framework for **Kingdom Come: Deliverance 1**, in the same spirit as SKSE for Skyrim. It lets modders write C++ plugins that hook into game events, run code every frame, and call game functions directly — instead of being limited to what the game's own scripting supports.
 
 It installs as a single `dinput8.dll` — no exe patching, no ASI loader, no repacking. This build runs on **Linux via Wine/Proton** (and still works on native Windows).
 
@@ -36,8 +36,8 @@ To confirm it worked: open `<game>/KCSE/KCSE.log` in a text editor after launchi
 **Linux:**
 
 ```sh
-git clone --recursive https://github.com/ThisIsAkill/KCSE-kcd1_linux.git
-cd KCSE-kcd1_linux
+git clone --recursive https://github.com/ThisIsAkill/cryhook-kcd1.git
+cd cryhook-kcd1
 ./build.sh
 ```
 
