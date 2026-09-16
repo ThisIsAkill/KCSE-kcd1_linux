@@ -1,0 +1,3 @@
+[submodule "extern/libKCD1"]
+	path = extern/libKCD1
+	url = https://github.com/JerryYOJ/libKCD1

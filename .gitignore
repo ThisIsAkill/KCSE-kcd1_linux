@@ -44,3 +44,9 @@
 .vscode
 .buildenv/build
 tools
+
+# Local CMake build trees
+build-mingw/
+
+# Runtime logs
+*.log

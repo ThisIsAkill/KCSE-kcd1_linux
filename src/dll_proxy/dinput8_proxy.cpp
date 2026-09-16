@@ -1,5 +1,5 @@
 #include "dinput8_proxy.h"
-#include <Windows.h>
+#include <windows.h>
 #include <objbase.h>
 
 static HMODULE s_realDinput8 = nullptr;
@@ -21,7 +21,7 @@ bool Init()
 {
     char sysDir[MAX_PATH];
     GetSystemDirectoryA(sysDir, MAX_PATH);
-    strcat_s(sysDir, "\\dinput8.dll");
+    strncat(sysDir, "\\dinput8.dll", MAX_PATH - strlen(sysDir) - 1);
 
     s_realDinput8 = LoadLibraryA(sysDir);
     if (!s_realDinput8)

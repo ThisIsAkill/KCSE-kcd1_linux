@@ -9,12 +9,22 @@ target_precompile_headers(KCSE PRIVATE "${RE_BUILDENV}/PCH.h")
 target_compile_definitions(KCSE PRIVATE
     _ITERATOR_DEBUG_LEVEL=0 WIN32_LEAN_AND_MEAN NOMINMAX)
 
-target_compile_options(KCSE PRIVATE /utf-8 /W4 /wd4819 /wd4100)
+if(MSVC)
+    target_compile_options(KCSE PRIVATE /utf-8 /W4 /wd4819 /wd4100)
+else()
+    # MinGW cross-compilation (Linux → Windows DLL for Wine/Proton)
+    target_compile_options(KCSE PRIVATE -Wall -Wno-unused-parameter)
+    target_link_options(KCSE PRIVATE -static-libgcc -static-libstdc++)
+endif()
 
 target_include_directories(KCSE PRIVATE
     ${RE_ROOT}/include ${RE_ROOT}/include/CryEngine/CryCommon ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
-target_link_libraries(KCSE PRIVATE kcd_re spdlog::spdlog version.lib)
+if(MSVC)
+    target_link_libraries(KCSE PRIVATE kcd_re spdlog::spdlog version.lib)
+else()
+    target_link_libraries(KCSE PRIVATE kcd_re spdlog::spdlog version)
+endif()
 
 set_target_properties(KCSE PROPERTIES OUTPUT_NAME "dinput8")
 

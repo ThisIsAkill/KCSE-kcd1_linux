@@ -3,8 +3,8 @@
 #include "KCSE/KCSEAPI.h"
 #include "KCSE/Trampoline.h"
 #include "Offsets/Offsets.h"
-#include "REL.h"
-#include <Windows.h>
+#include "vtable_hook.h"
+#include <windows.h>
 #include <spdlog/spdlog.h>
 
 // ---- CompleteInit vtable hook (DataLoaded, one-shot) ----
@@ -17,7 +17,7 @@ void __fastcall Hooked_CompleteInit(void* pThis)
     g_origCompleteInit(pThis);
     spdlog::info("DataLoaded");
     PluginManager::Dispatch(KCSE::kPluginHandle_KCSE, KCSE::IMessagingInterface::kMessage_DataLoaded, nullptr, 0, nullptr);
-    REL::Relocation<>{ *reinterpret_cast<std::uintptr_t*>(pThis) }.write_vfunc(9,g_origCompleteInit);
+    VtableHook::Restore<CompleteInitFn>(pThis, 0x48, g_origCompleteInit);
     g_origCompleteInit = nullptr;
 }
 
@@ -43,6 +43,20 @@ void __fastcall Hooked_OnActionEvent(void* pThis, SActionEvent* pEvent)
 using ProcessMessageFn = void(__fastcall*)(void* pManager, void* pMessage);
 static ProcessMessageFn g_origProcessMessage = nullptr;
 
+constexpr uintptr_t kCallSite_SaveGame = 0xF08642;
+constexpr uintptr_t kCallSite_NewGame  = 0xA8B944;
+
+// These call-site RVAs were reverse-engineered against a specific WHGame.dll
+// build; a different build's compiler output shifts surrounding code, so the
+// RVA may no longer land on a `call rel32` instruction at all. Trampoline::
+// write_call patches 5 bytes unconditionally regardless of what's actually
+// there, so check the opcode first -- patching the wrong bytes overwrites
+// arbitrary, unrelated engine code.
+bool LooksLikeCall5(uintptr_t addr)
+{
+    return *reinterpret_cast<uint8_t*>(addr) == 0xE8;
+}
+
 void __fastcall Hook_SaveGame(void* pManager, void* pMessage)
 {
     spdlog::info("SaveGame");
@@ -62,17 +76,16 @@ namespace EventDispatcher {
 void Install()
 {
     auto* pFramework = Offsets::GetCCryAction();
+    auto whGame = reinterpret_cast<uintptr_t>(GetModuleHandleA("WHGame.dll"));
+    auto& trampoline = KCSE::GetTrampoline();
 
-    // CCryAction vtable: CompleteInit slot 9 (+0x48), OnActionEvent slot 123 (+0x3D8).
-    REL::Relocation<> fwVtbl{ *reinterpret_cast<std::uintptr_t*>(pFramework) };
-    g_origCompleteInit  = reinterpret_cast<CompleteInitFn>(fwVtbl.write_vfunc(9, Hooked_CompleteInit));
-    g_origOnActionEvent = reinterpret_cast<OnActionEventFn>(fwVtbl.write_vfunc(123, Hooked_OnActionEvent));
+    g_origCompleteInit = VtableHook::Swap<CompleteInitFn>(pFramework, 0x48, Hooked_CompleteInit);
+    g_origOnActionEvent = VtableHook::Swap<OnActionEventFn>(pFramework, 0x3D8, Hooked_OnActionEvent);
 
-    // Mid-function call-site hooks: REL::ID(containing fn) + byte offset into it (a raw
-    // mid-fn RVA isn't in the address library; the offset is build-invariant).
-    g_origProcessMessage = reinterpret_cast<ProcessMessageFn>(  // C_ModuleMessageSaveGameRequest::Dispatch +0xCE
-        REL::Relocation<>{ REL::ID(137723), 0xCE }.write_call<5>(Hook_SaveGame));
-    REL::Relocation<>{ REL::ID(65914), 0x74 }.write_call<5>(Hook_NewGame);  // C_NewGamePrepareMessage::Dispatch +0x74
+    g_origProcessMessage = reinterpret_cast<ProcessMessageFn>(
+        trampoline.write_call<5>(whGame + kCallSite_SaveGame, Hook_SaveGame));
+
+    trampoline.write_call<5>(whGame + kCallSite_NewGame, Hook_NewGame);
 
     spdlog::info("Hooks installed");
 }
@@ -81,11 +94,10 @@ void Remove()
 {
     auto* pFramework = Offsets::GetCCryAction();
     if (pFramework) {
-        REL::Relocation<> fwVtbl{ *reinterpret_cast<std::uintptr_t*>(pFramework) };
         if (g_origCompleteInit)
-            fwVtbl.write_vfunc(9,g_origCompleteInit);
+            VtableHook::Restore<CompleteInitFn>(pFramework, 0x48, g_origCompleteInit);
         if (g_origOnActionEvent)
-            fwVtbl.write_vfunc(123,g_origOnActionEvent);
+            VtableHook::Restore<OnActionEventFn>(pFramework, 0x3D8, g_origOnActionEvent);
     }
 }
 

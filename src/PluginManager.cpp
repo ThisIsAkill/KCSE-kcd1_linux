@@ -1,5 +1,5 @@
 #include "PluginManager.h"
-#include <Windows.h>
+#include <windows.h>
 #include <filesystem>
 #include <mutex>
 #include <spdlog/spdlog.h>
@@ -70,11 +70,15 @@ static bool CheckCompatibility(const KCSE::PluginVersionData& ver)
 static bool SafeCallPluginLoad(KCSE::PluginLoadFn loadFn, const KCSE::IKCSEInterface* kcse, DWORD* pExCode)
 {
     *pExCode = 0;
+#ifdef _MSC_VER
     __try {
         return loadFn(kcse);
     } __except (*pExCode = GetExceptionCode(), EXCEPTION_EXECUTE_HANDLER) {
         return false;
     }
+#else
+    return loadFn(kcse);
+#endif
 }
 
 // ---- Public API ----

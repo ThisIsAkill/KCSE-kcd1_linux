@@ -1,0 +1,16 @@
+# Address-library mapping for the Steam distribution of Kingdom Come: Deliverance,
+# build key "404-504czj4" (game version 1.9.7.0, as reported by WHGame.dll at
+# runtime -- see the "kcd_re REL::IDDatabase" error box for the exact key your
+# build needs).
+#
+# Format: one "<REL::ID> <hex offset from module base>" pair per line.
+# Blank lines and lines starting with '#' are ignored.
+#
+# id 882: global holding the IGameFramework* (CCryAction). Carried over from
+# libKCD1's pre-address-library hardcoded constant (kCCryActionOffset, see
+# libKCD1 commit 60573fc^:include/Offsets/Offsets.h), which was verified
+# against an earlier game build. It has NOT been independently re-verified
+# against Steam build 404-504czj4 / game version 1.9.7.0 -- if GetCCryAction()
+# returns a bad pointer, plugins that call it may crash. Please verify and
+# update this file if you can confirm the correct offset for this build.
+882 0x3785D88
