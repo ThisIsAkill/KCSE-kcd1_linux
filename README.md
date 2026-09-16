@@ -117,6 +117,8 @@ python3 addresslib/gen_addresslib.py <game>/KCSE/addresslib addresslib/mappings/
 
 This is a Linux port of [JerryYOJ](https://github.com/JerryYOJ)'s **[KCSE](https://github.com/JerryYOJ/KCSE-for-kcd1)**, built on their **[libKCD1](https://github.com/JerryYOJ/libKCD1)** reverse-engineering work. All credit for the original script extender design and the reverse-engineered game internals it depends on goes to them — this fork's contribution is getting it running on Linux via Wine/Proton.
 
+Parts of this port (build fixes, debugging, and documentation) were done with AI assistance.
+
 ## Contributing
 
 See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before opening issues or pull requests.
