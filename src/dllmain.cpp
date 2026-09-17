@@ -3,6 +3,7 @@
 #include "PluginManager.h"
 #include "EventDispatcher.h"
 #include "TaskInterface.h"
+#include "AsiLoader.h"
 #include "KCSE/Trampoline.h"
 #include "Offsets/Offsets.h"
 #include <windows.h>
@@ -53,6 +54,8 @@ static void MainThread(HMODULE hModule)
     KCSE::AllocTrampoline(1 << 12);
     TaskInterface::InstallHook();
     EventDispatcher::Install();
+
+    AsiLoader::Init(hModule);
 
     PluginManager::Init();
     PluginManager::LoadAll(&g_kcseInterface);
