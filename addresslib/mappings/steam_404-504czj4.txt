@@ -23,6 +23,7 @@
 2   0x219730    # S_CombatActionAttackQueryData::GetCacheKey, vtable[1] (sub_180219730)
 9   0x28C040    # CryEngine bucket pool malloc (sub_18028C040)
 13  0x3A107C    # C_Actor::GetOrCreateCombatActor
+14  0x3DBE28    # C_FastTravel::IsFastTravelling (sub_1803DBE28)
 17  0x45D1EC    # S_CombatActorState::SetCommittedAttackZone (sub_18045D1EC)
 18  0x45FD18    # enumerate attack-candidate vector (sub_18045FD18)
 19  0x45FF90    # C_CombatActionAttackFactory::BuildAttackQuery (sub_18045FF90)
@@ -34,9 +35,28 @@
 27  0x63A634    # C_CombatActor::SetOpponent (sub_18063A634)
 31  0x69536C    # C_CombatActor::DispatchCounterAction
 37  0xF49280    # S_CombatActionAttackQueryData vtable[0] GetTypeNameHash (sub_180F49280)
+38  0x112C494   # C_UIMap::ForceStartFastTravel (sub_18112C494)
+39  0x121E530   # C_FastTravel::CanStartTravelling (sub_18121E530)
+40  0x1226864   # C_FastTravel::AnswerRandomEvent (sub_181226864)
+41  0x1226B24   # C_FastTravel::SetDestination (sub_181226B24)
+42  0x1226C54   # C_FastTravel::StartTravelling (sub_181226C54)
+43  0x1226EA8   # C_FastTravel::Stop (sub_181226EA8)
+44  0x12271B0   # C_FastTravel::ScheduleStopAtEvent (sub_1812271B0)
 48  0x15F457C   # GetInventoryForWuid: container WUID -> single C_Inventory (sub_1815F457C)
+49  0x21CB328   # VTABLE_C_CombatActorHorsePullDown[0] vtable
+50  0x21CB360   # VTABLE_C_CombatActorHorsePullDown[1] vtable
 51  0x21CB380   # C_CombatActorHuntAttack primary vtable (C_CombatActorObject)
 52  0x21CB3B8   # C_CombatActorHuntAttack secondary vtable (I_CombatActorHuntAttack)
+53  0x21CB3D8   # VTABLE_C_CombatActorMercyKill[0] vtable
+54  0x21CB410   # VTABLE_C_CombatActorMercyKill[1] vtable
+55  0x21EB6E0   # VTABLE_C_CombatActorDirector[1] vtable
+56  0x21EB718   # VTABLE_C_CombatActorDirector[0] vtable
+57  0x26B3820   # VTABLE_C_DialogCameraManager[0] vtable
+58  0x26B3860   # VTABLE_C_DialogCameraManager[1] vtable
+59  0x2766C70   # VTABLE_CViewSystem[1] vtable (IMovieUser, CViewSystem+0x08); confirmed via RTTI walk of WHGame.dll
+60  0x2766CA0   # VTABLE_CViewSystem[2] vtable (ILevelSystemListener, CViewSystem+0x10); confirmed via RTTI walk of WHGame.dll
+61  0x2766CF8   # VTABLE_CViewSystem[0] vtable (IViewSystem, primary); confirmed via RTTI walk of WHGame.dll
+62  0x279FD10   # VTABLE_CMovieSystem[0] vtable (IMovieSystem); matches CMovieSystem.h's own documented "92 verified function slots" comment, confirmed independently via RTTI walk of WHGame.dll
 64  0x29D16B8   # gEnv (SSystemGlobalEnvironment*)
 123 0x29F2880   # C_CombatActorActionSyncHit RTTI type descriptor (combatmodule); from libKCD1 HEAD include/Offsets/Offsets_RTTI.h, not the pre-address-library header like the entries above
 141 0x29F6718   # I_Action RTTI type descriptor (framework); source type for the same kcd_cast<C_CombatActorActionSyncHit*> as id 123 above, from Offsets_RTTI.h
@@ -44,6 +64,11 @@
 875 0x359B330   # combat action-type ID array base
 876 0x359C2F0   # combat input-class ID array base
 878 0x36DD8A0   # S_CombatSettings singleton
+879 0x3785948   # global holding the heap C_UIEHud* (qword_183785948); documented directly in guimodule/C_UIEHud.h's GetInstance() comment and C_UIEHud.cpp
 881 0x3785BC0   # Cry3DEngineBase static C3DEngine* (qword_183785BC0)
 882 0x3785D88   # global holding the IGameFramework* (CCryAction)
 886 0x37999E0   # central WUID->C_AIObject* map pointer (qword_1837999E0)
+887 0x28D0A8    # malloc thunk (-> __imp_malloc); documented directly in CrySDKStubs.cpp's CryModuleMalloc
+888 0xA2CB13    # calloc thunk; documented directly in CrySDKStubs.cpp's CryModuleCalloc
+889 0xA2CB19    # free thunk; documented directly in CrySDKStubs.cpp's CryModuleFree
+890 0xA2CB31    # realloc thunk; documented directly in CrySDKStubs.cpp's CryModuleRealloc
