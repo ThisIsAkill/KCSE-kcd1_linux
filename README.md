@@ -6,7 +6,7 @@
 
 A Linux/Proton port of **KCSE** (Kingdom Come Script Extender) — [JerryYOJ](https://github.com/JerryYOJ)'s native plugin framework for **Kingdom Come: Deliverance 1**, in the same spirit as SKSE for Skyrim. It lets modders write C++ plugins that hook into game events, run code every frame, and call game functions directly — instead of being limited to what the game's own scripting supports.
 
-It installs as a single `dinput8.dll` — no exe patching, no ASI loader, no repacking. This build runs on **Linux via Wine/Proton** (and still works on native Windows).
+It installs as a single `dinput8.dll` — no exe patching, no repacking, and no separate ASI loader: Cryhook loads `.asi` mods natively itself, alongside its own KCSE plugins. This build runs on **Linux via Wine/Proton** (and still works on native Windows).
 
 ## Installation
 
@@ -18,6 +18,8 @@ It installs as a single `dinput8.dll` — no exe patching, no ASI loader, no rep
 This currently supports **Steam, game version 1.9.7.0** (build `404-504czj4`). Other versions/distributions aren't mapped yet — see [Address Library](#address-library) below if you want to add support for yours. On any other build, KCSE fails loudly with a clear dialog ("Address library not found" / "REL::ID N is not present") rather than silently running with wrong addresses — a crash on launch almost always means a version mismatch, not a corrupt install.
 
 To install a plugin, drop its DLL into `<game>/KCSE/Plugins/` (or `<game>/mods/<modname>/KCSE/Plugins/` if you're using a mod manager).
+
+`.asi` mods work too — drop the `.asi` file straight into `<game>/Bin/Win64/` per that mod's own install instructions, same as you would with Ultimate ASI Loader. Cryhook already owns `dinput8.dll` for its own hooks, so it loads any `.asi` files it finds there itself; you don't need (and shouldn't run) a second ASI loader alongside it.
 
 ### Steam Deck / Desktop Mode
 
@@ -75,7 +77,8 @@ Requires Visual Studio 2022+ ("Desktop development with C++") and [vcpkg](https:
 1. Waits for the core CryEngine subsystems to be ready.
 2. Installs its hooks into the game's engine.
 3. Loads every plugin DLL and hands each one an API interface.
-4. Dispatches lifecycle events (`DataLoaded`, `NewGame`, `LoadGame`, `SaveGame`, `AllPluginsLoaded`) as the game reaches each stage.
+4. Scans its own directory (`Bin/Win64/`) for `.asi` files and `LoadLibrary()`s each one — no export or version checking, they self-init in `DllMain` exactly as they would under a standalone ASI loader.
+5. Dispatches lifecycle events (`DataLoaded`, `NewGame`, `LoadGame`, `SaveGame`, `AllPluginsLoaded`) as the game reaches each stage.
 
 CryEngine's internal memory addresses shift between game builds, so KCSE never hardcodes them in plugin code — it resolves them at runtime through an **address library**, keyed to the exact build of the game you're running.
 
@@ -126,7 +129,7 @@ It looks `N` up in libKCD1's `Offsets_RTTI.h`/`Offsets_VTABLE.h` (which embed ea
 
 | Path | Contents |
 | --- | --- |
-| `src/` | KCSE core: DLL proxy, plugin manager, event dispatcher, task interface, trampoline glue |
+| `src/` | KCSE core: DLL proxy, plugin manager, `.asi` loader, event dispatcher, task interface, trampoline glue |
 | `extern/libKCD1/` | [libKCD1](https://github.com/JerryYOJ/libKCD1), the reverse-engineered game headers KCSE builds against |
 | `addresslib/` | Address-library mappings, the generator that compiles them, and `resolve_id.py` for filling in a missing `REL::ID` |
 | `cmake/` | CMake helpers, including the MinGW-w64 cross-compilation toolchain file |
