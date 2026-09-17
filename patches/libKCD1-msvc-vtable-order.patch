@@ -1,0 +1,25 @@
+diff --git a/include/KCSE/KCSEAPI.h b/include/KCSE/KCSEAPI.h
+index 4816126..192ec44 100644
+--- a/include/KCSE/KCSEAPI.h
++++ b/include/KCSE/KCSEAPI.h
+@@ -77,8 +77,19 @@ public:
+     using EventCallback = void(*)(Message* msg);
+ 
+     virtual uint32_t GetInterfaceVersion() const = 0;
+-    virtual bool RegisterListener(EventCallback handler) = 0;
++    // KCD-RE MinGW patch: order matches MSVC's ACTUAL compiled vtable layout
++    // (confirmed from a prebuilt plugin's .pdb — LF_METHODLIST for
++    // RegisterListener: the (const char*, EventCallback) overload sits at
++    // vftable offset 0x08, the (EventCallback)-only one at 0x10), not the
++    // textual declaration order below. MSVC doesn't always vtable-order
++    // same-name overloads by declaration order the way Itanium/GCC does;
++    // this mismatch is what silently corrupted every prebuilt (MSVC-built)
++    // plugin's RegisterListener(EventCallback) call into landing on the
++    // 2-arg slot with garbage arguments. Swapping these two so GCC's
++    // declaration-order vtable matches MSVC's actual one restores drop-in
++    // binary compatibility with existing prebuilt plugin DLLs.
+     virtual bool RegisterListener(const char* sender, EventCallback handler) = 0;
++    virtual bool RegisterListener(EventCallback handler) = 0;
+     virtual bool Dispatch(uint32_t messageType, void* data, uint32_t dataLen, const char* receiver = nullptr) = 0;
+ };
+ 

@@ -5,7 +5,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build-mingw"
 TOOLCHAIN="${SCRIPT_DIR}/cmake/toolchain-mingw64.cmake"
 RE_ROOT="${SCRIPT_DIR}/extern/libKCD1"
-PATCH="${SCRIPT_DIR}/patches/libKCD1-mingw-crythread.patch"
 
 # Ensure submodule is populated
 if [ ! -f "${RE_ROOT}/include/KCSE/KCSEAPI.h" ]; then
@@ -18,10 +17,29 @@ fi
 # lookup to instantiation (and nothing ever instantiates CrySimpleThread<T>);
 # GCC's two-phase lookup requires it resolved at template definition, so the
 # PCH fails to build under MinGW without this patch.
-if ! git -C "${RE_ROOT}" apply --reverse --check "${PATCH}" 2>/dev/null; then
-    echo "Patching libKCD1 for MinGW gEnv visibility..."
-    git -C "${RE_ROOT}" apply "${PATCH}"
-fi
+#
+# MSVC doesn't vtable-order same-name virtual overloads by declaration order
+# the way Itanium/GCC does; IMessagingInterface::RegisterListener's two
+# overloads land in the opposite vtable slots in every existing prebuilt
+# (MSVC-built) plugin, which silently corrupted their RegisterListener(EventCallback)
+# calls into landing on the wrong slot with garbage arguments. Reordering the
+# declarations to match MSVC's actual layout restores drop-in binary
+# compatibility with prebuilt plugin DLLs.
+#
+# libstdc++'s std::map/std::unordered_map differ in size from MSVC STL's;
+# several guimodule/playermodule structs (C_UIMap, C_UIMapCloudAtlas,
+# C_FastTravel) fail their layout static_asserts when built under MinGW
+# without this.
+for PATCH in \
+    "${SCRIPT_DIR}/patches/libKCD1-mingw-crythread.patch" \
+    "${SCRIPT_DIR}/patches/libKCD1-msvc-vtable-order.patch" \
+    "${SCRIPT_DIR}/patches/libKCD1-mingw-guimodule-struct-layout.patch"
+do
+    if ! git -C "${RE_ROOT}" apply --reverse --check "${PATCH}" 2>/dev/null; then
+        echo "Patching libKCD1: $(basename "${PATCH}")..."
+        git -C "${RE_ROOT}" apply "${PATCH}"
+    fi
+done
 
 # Configure (only if not already configured)
 if [ ! -f "${BUILD_DIR}/build.ninja" ] && [ ! -f "${BUILD_DIR}/Makefile" ]; then

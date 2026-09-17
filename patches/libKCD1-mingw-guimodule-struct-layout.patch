@@ -1,0 +1,82 @@
+diff --git a/include/guimodule/C_UIMap.h b/include/guimodule/C_UIMap.h
+index 0b6d42f..9bbf3ef 100644
+--- a/include/guimodule/C_UIMap.h
++++ b/include/guimodule/C_UIMap.h
+@@ -143,6 +143,18 @@ public:
+     // Flash UI-event dispatch table: hash(event name) → internal handler id.
+     // Verified in OnUIEvent sub_1811368C8 (key@node+0x10, value dword@node+0x14,
+     // hash sub_1804BF50C over 4 bytes) and ctor sub_181128558 (@+0x338).
++#if defined(__GNUC__) && !defined(_MSC_VER)
++    // KCD-RE MinGW patch: libstdc++'s std::unordered_map ABI differs in size
++    // from MSVC STL's (~56 vs 64 bytes here) and these four maps are never
++    // touched as real maps by any current MinGW-built plugin — only relied on
++    // for this class's overall size/layout — so opaque byte arrays sized to
++    // the real (MSVC, already documented per-member below) layout stand in.
++    unsigned char m_uiEventDispatch[0x40];  // +0x338
++    uint64_t                m_unk378;                       // +0x378  (uninit in ctor)
++    char*                   m_szUnk380;                     // +0x380  CryString (StringHash sub_18028CEA4)
++    unsigned char m_unk388[0x40];  // +0x388  (node 0x30)
++    unsigned char m_unk3C8[0x40];  // +0x3C8  (node 0x30)
++#else
+     std::unordered_map<int32_t, uint32_t> m_uiEventDispatch;  // +0x338  (0x40)
+ 
+     uint64_t                m_unk378;                       // +0x378  (uninit in ctor)
+@@ -151,6 +163,7 @@ public:
+     // Spatial/POI hash maps (purpose UNVERIFIED; see value-type note above the class).
+     std::unordered_map<int32_t, S_UIMapBucketValue20> m_unk388;  // +0x388  (0x40, node 0x30)
+     std::unordered_map<int32_t, S_UIMapBucketValue20> m_unk3C8;  // +0x3C8  (0x40, node 0x30)
++#endif
+ 
+     Vec3                    m_unk408_focus;                 // +0x408  default copied from globals
+                                                             //   (qword_1829DA4E0 + dword_1829DA4E8);
+@@ -159,7 +172,11 @@ public:
+ 
+     C_ScriptBindMap         m_scriptBindMap;                // +0x418  (Lua "UIMap"; ctor sub_18110CD28)
+ 
++#if defined(__GNUC__) && !defined(_MSC_VER)
++    unsigned char m_unk488[0x40];  // +0x488  (node 0x28); see MinGW patch note above
++#else
+     std::unordered_map<int32_t, S_UIMapBucketValue18> m_unk488;  // +0x488  (0x40, node 0x28)
++#endif
+ 
+     // --- Native methods (forwarded by RVA in C_UIMap.cpp) ---
+     // Fires "OnForceStartFastTravel{Pos, PlayerId, IconType}" to Flash and
+diff --git a/include/guimodule/C_UIMapCloudAtlas.h b/include/guimodule/C_UIMapCloudAtlas.h
+index 922bcec..99954b8 100644
+--- a/include/guimodule/C_UIMapCloudAtlas.h
++++ b/include/guimodule/C_UIMapCloudAtlas.h
+@@ -21,7 +21,16 @@ public:
+     virtual void _vf2() {};   // [2] 0x10
+     virtual void _vf3() {};   // [3] 0x18
+ 
++#if defined(__GNUC__) && !defined(_MSC_VER)
++    // KCD-RE MinGW patch: libstdc++'s std::map is 48 bytes vs MSVC STL's 16
++    // (different _Rb_tree layout) — this field is never touched as a real
++    // map by any current MinGW-built plugin, only relied on for the class's
++    // overall size/layout, so an opaque byte array of the real (MSVC) size
++    // stands in for it instead of trying to match std::map's ABI.
++    unsigned char m_cloudMap[16]; // +0x08
++#else
+     std::map<const char*, void*, CStrLess> m_cloudMap; // +0x08
++#endif
+ };
+ static_assert(sizeof(C_UIMapCloudAtlas) == 0x18);
+ 
+diff --git a/include/playermodule/C_FastTravel.h b/include/playermodule/C_FastTravel.h
+index 56fd8c8..b4d22c9 100644
+--- a/include/playermodule/C_FastTravel.h
++++ b/include/playermodule/C_FastTravel.h
+@@ -130,7 +130,13 @@ public:
+                                                      //        its +0x18 = this+8, Stop schedules the post-stop continuation on it
+     framework::S_GameTimer m_scheduledStopTimer;     // +0x120 ScheduleStopAtEvent timer (ctor flags=0x11; Update: Armed+expired → Stop)
+     S_FTSlowdownTracker* m_pSlowdownTracker;         // +0x140 owned 0x90-byte tracker; speed factor read while m_timeSkipActive
++#if defined(__GNUC__) && !defined(_MSC_VER)
++    // KCD-RE MinGW patch: see C_UIMap.h's note — same libstdc++/MSVC
++    // std::unordered_map size mismatch, same opaque-byte-array treatment.
++    unsigned char m_eventStates[0x40]; // +0x148 per-random-event-id marks (fired-mode dedup + stop-here)
++#else
+     std::unordered_map<int, S_FTEventState> m_eventStates; // +0x148 per-random-event-id marks (fired-mode dedup + stop-here)
++#endif
+ 
+     // IsFastTravelling = m_isTravelling || m_pAfterFastTravelObserver->active(+0x68)
+     bool IsFastTravelling() const;                          // sub_1803DBE28 (forwarded)
