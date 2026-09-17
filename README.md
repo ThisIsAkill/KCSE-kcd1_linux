@@ -15,7 +15,7 @@ It installs as a single `dinput8.dll` — no exe patching, no repacking, and no 
 3. Copy `kcd_addresslib_steam_404-504czj4.bin` to `<game>/KCSE/addresslib/`.
 4. Launch the game as usual. That's it — no other setup required.
 
-This currently supports **Steam, game version 1.9.7.0** (build `404-504czj4`). Other versions/distributions aren't mapped yet — see [Address Library](#address-library) below if you want to add support for yours. On any other build, KCSE fails loudly with a clear dialog ("Address library not found" / "REL::ID N is not present") rather than silently running with wrong addresses — a crash on launch almost always means a version mismatch, not a corrupt install.
+This currently supports **Steam, game version 1.9.7.0** (build `404-504czj4`). Other versions/distributions aren't mapped yet — see [Address Library](#address-library) below if you want to add support for yours. On any other build, Cryhook fails loudly with a clear dialog ("Address library not found" / "REL::ID N is not present") rather than silently running with wrong addresses — a crash on launch almost always means a version mismatch, not a corrupt install.
 
 To install a plugin, drop its DLL into `<game>/KCSE/Plugins/` (or `<game>/mods/<modname>/KCSE/Plugins/` if you're using a mod manager).
 
@@ -31,7 +31,7 @@ To install a plugin, drop its DLL into `<game>/KCSE/Plugins/` (or `<game>/mods/<
 4. In the file manager: copy `dinput8.dll` into the `Bin\Win64` folder, and `kcd_addresslib_steam_404-504czj4.bin` into `KCSE\addresslib` (create the `KCSE` and `addresslib` folders if they don't exist yet).
 5. Switch back to Gaming Mode and launch the game normally — no launch options, no forcing a specific Proton version, nothing else to configure.
 
-To confirm it worked: open `<game>/KCSE/KCSE.log` in a text editor after launching. It should end with `Ready.`. If the game won't start at all (with or without KCSE), that's a Proton/compatibility issue unrelated to this mod — check the game's own Properties → Compatibility tab first.
+To confirm it worked: open `<game>/KCSE/KCSE.log` in a text editor after launching. It should end with `Ready.`. If the game won't start at all (with or without Cryhook), that's a Proton/compatibility issue unrelated to this mod — check the game's own Properties → Compatibility tab first.
 
 ## Building from source
 
@@ -72,7 +72,7 @@ Requires Visual Studio 2022+ ("Desktop development with C++") and [vcpkg](https:
 
 ## How it works
 
-`dinput8.dll` takes the place of the game's real `dinput8.dll` — Windows loads it automatically at startup since it sits next to the game's executable. KCSE's proxy forwards every DirectInput call through to the real system library so input works exactly as before, then in the background it:
+`dinput8.dll` takes the place of the game's real `dinput8.dll` — Windows loads it automatically at startup since it sits next to the game's executable. Cryhook's proxy forwards every DirectInput call through to the real system library so input works exactly as before, then in the background it:
 
 1. Waits for the core CryEngine subsystems to be ready.
 2. Installs its hooks into the game's engine.
@@ -80,7 +80,7 @@ Requires Visual Studio 2022+ ("Desktop development with C++") and [vcpkg](https:
 4. Scans its own directory (`Bin/Win64/`) for `.asi` files and `LoadLibrary()`s each one — no export or version checking, they self-init in `DllMain` exactly as they would under a standalone ASI loader.
 5. Dispatches lifecycle events (`DataLoaded`, `NewGame`, `LoadGame`, `SaveGame`, `AllPluginsLoaded`) as the game reaches each stage.
 
-CryEngine's internal memory addresses shift between game builds, so KCSE never hardcodes them in plugin code — it resolves them at runtime through an **address library**, keyed to the exact build of the game you're running.
+CryEngine's internal memory addresses shift between game builds, so Cryhook never hardcodes them in plugin code — it resolves them at runtime through an **address library**, keyed to the exact build of the game you're running.
 
 ## Plugin Development
 
@@ -107,7 +107,7 @@ KCSE_PLUGIN_LOAD(kcse)
 
 ## Address Library
 
-Since the game's internal addresses aren't fixed, plugins ask for a symbolic ID and KCSE looks up the real address for whatever build is running — the same plugin binary keeps working across game patches as long as a mapping exists for that build.
+Since the game's internal addresses aren't fixed, plugins ask for a symbolic ID and Cryhook looks up the real address for whatever build is running — the same plugin binary keeps working across game patches as long as a mapping exists for that build.
 
 Mappings are plain text files at `addresslib/mappings/<distribution>_<build_key>.txt`, one `<id> <hex offset>` pair per line. They're compiled into the binary format the game loads with:
 
@@ -129,7 +129,7 @@ It looks `N` up in libKCD1's `Offsets_RTTI.h`/`Offsets_VTABLE.h` (which embed ea
 
 | Path | Contents |
 | --- | --- |
-| `src/` | KCSE core: DLL proxy, plugin manager, `.asi` loader, event dispatcher, task interface, trampoline glue |
+| `src/` | Cryhook core: DLL proxy, plugin manager, `.asi` loader, event dispatcher, task interface, trampoline glue |
 | `extern/libKCD1/` | [libKCD1](https://github.com/JerryYOJ/libKCD1), the reverse-engineered game headers KCSE builds against |
 | `addresslib/` | Address-library mappings, the generator that compiles them, and `resolve_id.py` for filling in a missing `REL::ID` |
 | `cmake/` | CMake helpers, including the MinGW-w64 cross-compilation toolchain file |
