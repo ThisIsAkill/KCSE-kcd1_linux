@@ -132,7 +132,7 @@ The hand-maintained mappings above are enough to build and run Cryhook, but they
 It's not fetched by default — it's a large, separately-owned repository with no license file, so this project neither vendors its data nor pulls it into a routine clone/build. If you want the fuller table anyway:
 
 ```sh
-git submodule update --init extern/addresslib-kcse
+git submodule update --init --checkout extern/addresslib-kcse
 ```
 
 `gen_addresslib.py` then picks it up automatically: for any build key it has an upstream `.bin` for, that table becomes the base, and this repo's own `mappings/*.txt` entries are layered on top and win on conflict. Build keys upstream doesn't cover still compile from local mappings alone, exactly as before. Nothing under `extern/addresslib-kcse/` is committed to this repo — it's your own checkout of JerryYOJ's repository, governed by its own terms.
