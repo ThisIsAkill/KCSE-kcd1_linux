@@ -20,6 +20,12 @@ die()  { echo "[FAIL] $*" >&2; exit 1; }
 pass() { echo "[PASS] $*"; }
 
 # ── 1. Build ──────────────────────────────────────────────────────────────────
+# cmake --build alone doesn't apply libKCD1's compatibility patches -- only
+# build.sh's own path did that, so this step used to silently build against
+# an unpatched libKCD1 if the submodule was ever reset. Same script build.sh
+# uses, so the two can't drift out of sync again.
+"$SCRIPT_DIR/cmake/apply-libkcd1-patches.sh"
+
 echo "==> Building..."
 cmake --build "$BUILD_DIR" --parallel 2>&1 || die "Build failed — fix compile errors above"
 echo "    dinput8.dll OK"
