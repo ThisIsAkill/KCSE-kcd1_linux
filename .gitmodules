@@ -1,3 +1,7 @@
 [submodule "extern/libKCD1"]
 	path = extern/libKCD1
 	url = https://github.com/JerryYOJ/libKCD1
+[submodule "extern/addresslib-kcse"]
+	path = extern/addresslib-kcse
+	url = https://github.com/JerryYOJ/Address-Library-For-KCSE
+	update = none

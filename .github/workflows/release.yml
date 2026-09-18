@@ -20,6 +20,14 @@ jobs:
           # and are unreachable over SSH from an unauthenticated checkout.
           submodules: true
 
+      - name: Fetch upstream address library
+        # extern/addresslib-kcse is submodule.update=none (a 300+ MB repo
+        # skipped by the plain checkout above and by every dev build), but a
+        # release is exactly when the fuller, cross-version-verified table is
+        # worth the fetch: gen_addresslib.py layers it under this repo's own
+        # hand-verified mappings.txt entries automatically when present.
+        run: git submodule update --init extern/addresslib-kcse
+
       - name: Install toolchain
         run: |
           sudo apt-get update

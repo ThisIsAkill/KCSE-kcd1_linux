@@ -10,12 +10,12 @@ It installs as a single `dinput8.dll` — no exe patching, no repacking, and no 
 
 ## Installation
 
-1. Grab `dinput8.dll` and `kcd_addresslib_steam_404-504czj4.bin` from the [latest release](../../releases/latest).
+1. Grab `dinput8.dll` and the `kcd_addresslib_<dist>_404-504czj4.bin` matching your storefront (`steam`, `gog`, or `epic`) from the [latest release](../../releases/latest).
 2. Copy `dinput8.dll` to `<game>/Bin/Win64/`.
-3. Copy `kcd_addresslib_steam_404-504czj4.bin` to `<game>/KCSE/addresslib/`.
+3. Copy the `.bin` to `<game>/KCSE/addresslib/`.
 4. Launch the game as usual. That's it — no other setup required.
 
-This currently supports **Steam, game version 1.9.7.0** (build `404-504czj4`). Other versions/distributions aren't mapped yet — see [Address Library](#address-library) below if you want to add support for yours. On any other build, Cryhook fails loudly with a clear dialog ("Address library not found" / "REL::ID N is not present") rather than silently running with wrong addresses — a crash on launch almost always means a version mismatch, not a corrupt install.
+This currently supports **Steam, GOG, and Epic, game version 1.9.7.0** (build `404-504czj4`). Other versions aren't mapped yet — see [Address Library](#address-library) below if you want to add support for yours. On any other build, Cryhook fails loudly with a clear dialog ("Address library not found" / "REL::ID N is not present") rather than silently running with wrong addresses — a crash on launch almost always means a version mismatch, not a corrupt install.
 
 To install a plugin, drop its DLL into `<game>/KCSE/Plugins/` (or `<game>/mods/<modname>/KCSE/Plugins/` if you're using a mod manager).
 
@@ -125,12 +125,25 @@ python3 addresslib/resolve_id.py N
 
 It looks `N` up in libKCD1's `Offsets_RTTI.h`/`Offsets_VTABLE.h` (which embed each id's address in a comment), adds it to the mapping file, and re-sorts it. Pass `--game-dir <path>` to also recompile the `.bin` in the same step. It covers the common case — a plugin's `kcd_cast<>` or vtable hook needing an id nobody's mapped yet; if it can't find one, it tells you why and where to look instead.
 
+### Optional: upstream address library
+
+The hand-maintained mappings above are enough to build and run Cryhook, but they're a small, unverified subset — good enough to unblock a specific plugin, not a complete map of the binary. [JerryYOJ](https://github.com/JerryYOJ) (the original KCSE/libKCD1 author) separately maintains [Address-Library-For-KCSE](https://github.com/JerryYOJ/Address-Library-For-KCSE), a much larger table (700k+ entries) built by diffing the Steam/GOG/Epic binaries directly in IDA. It uses the same id numbering and the same `.bin` format Cryhook loads, so nothing needs converting.
+
+It's not fetched by default — it's a large, separately-owned repository with no license file, so this project neither vendors its data nor pulls it into a routine clone/build. If you want the fuller table anyway:
+
+```sh
+git submodule update --init extern/addresslib-kcse
+```
+
+`gen_addresslib.py` then picks it up automatically: for any build key it has an upstream `.bin` for, that table becomes the base, and this repo's own `mappings/*.txt` entries are layered on top and win on conflict. Build keys upstream doesn't cover still compile from local mappings alone, exactly as before. Nothing under `extern/addresslib-kcse/` is committed to this repo — it's your own checkout of JerryYOJ's repository, governed by its own terms.
+
 ## Repository layout
 
 | Path | Contents |
 | --- | --- |
 | `src/` | Cryhook core: DLL proxy, plugin manager, `.asi` loader, event dispatcher, task interface, trampoline glue |
 | `extern/libKCD1/` | [libKCD1](https://github.com/JerryYOJ/libKCD1), the reverse-engineered game headers KCSE builds against |
+| `extern/addresslib-kcse/` | Optional, not fetched by default — [Address-Library-For-KCSE](https://github.com/JerryYOJ/Address-Library-For-KCSE), see [Address Library](#address-library) |
 | `addresslib/` | Address-library mappings, the generator that compiles them, and `resolve_id.py` for filling in a missing `REL::ID` |
 | `cmake/` | CMake helpers, including the MinGW-w64 cross-compilation toolchain file |
 | `test/` | Minimal Wine smoke test, no game installation required |
